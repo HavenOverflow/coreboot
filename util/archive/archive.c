@@ -211,7 +211,6 @@ static int output_archive(const char *path)
 	fp = fopen(path, "wb");
 	if (!fp) {
 		fprintf(stderr, "Error: failed to open %s\n", path);
-		fclose(fp);
 		return -1;
 	}
 	if (fwrite(archive, sizeof(char), archive->size, fp) != archive->size) {

@@ -8,6 +8,11 @@
 
 #define MAX_HWID_LENGTH 0x100
 
+#ifndef CONFIG_MAINBOARD_SMBIOS_PRODUCT_NAME
+const char default_hwid_str[] = "Coreboot Device";
+#endif /* ! CONFIG_MAINBOARD_SMBIOS_PRODUCT_NAME */
+
+
 /*
  * Process the HWID string according to requirements:
  * - If a colon is found, delete everything before it
@@ -88,10 +93,17 @@ const char *smbios_system_product_name(void)
 		}
 	}
 
+#ifdef CONFIG_MAINBOARD_SMBIOS_PRODUCT_NAME
 	/* Fall back to default if file not found or processing resulted in empty string */
 	printk(BIOS_WARNING, "HWID: File not found or invalid, using default product name\n");
 	strncpy(hwid_str, CONFIG_MAINBOARD_SMBIOS_PRODUCT_NAME, MAX_HWID_LENGTH);
 	hwid_str[MAX_HWID_LENGTH] = '\0';
+#else
+	/* We have no mainboard fallback, just use a generic string */
+	printk(BIOS_WARNING, "HWID: File not found or invalid, using generic product name\n");
+	strncpy(hwid_str, default_hwid_str, sizeof(default_hwid_str));
+	hwid_str[sizeof(default_hwid_str)] = '\0';
+#endif /* CONFIG_MAINBOARD_SMBIOS_PRODUCT_NAME */
 
 	return hwid_str;
 }

@@ -103,6 +103,7 @@ static enum cb_err google_chromeec_flash_write(const void *image,
 	const uint8_t *file_buf;
 	struct ec_params_flash_write *params;
 	uint32_t end, off;
+	uint8_t local_buffer[1024];
 
 	/*
 	 * Get EC's protocol information, so that we can figure out how much
@@ -142,8 +143,11 @@ static enum cb_err google_chromeec_flash_write(const void *image,
 	printk(BIOS_DEBUG, "ec_flash_write(): image size 0x%x\n", image_size);
 	printk(BIOS_DEBUG, "ec_flash_write(): region offset 0x%x\n", region_offset);
 
-	/* Allocate buffer on the stack */
-	params = alloca(burst + sizeof(*params));
+	if ((burst + sizeof(*params)) > sizeof(local_buffer)) {
+		printk(BIOS_ERR, "Burst size exceeds local buffer capacity\n");
+		return CB_ERR;
+	}
+	params = (struct ec_params_flash_write *)local_buffer;
 
 	/* Fill up the buffer */
 	end = region_offset + image_size;
